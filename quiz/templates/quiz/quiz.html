@@ -1,0 +1,258 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}Quiz - {{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <div class="card quiz-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <a href="javascript:history.back()" class="btn btn-outline-primary me-3">
+                                <i class="fas fa-arrow-left"></i> Back
+                            </a>
+                            <h3 class="mb-0">{{ subject.name }}</h3>
+                        </div>
+                        <div class="quiz-info">
+                            <span class="badge bg-primary">Question {{ current_question_no }} of {{ total_questions }}</span>
+                            <span class="badge bg-info ms-2">Score: {{ score }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if question %}
+                        <form method="post" action="{% url 'submit_answer' subject.id question.id %}" id="quizForm">
+                            {% csrf_token %}
+                            <div class="question mb-4">
+                                <h4 class="question-text">{{ question.text }}</h4>
+                                <div class="points-info text-muted small mb-3">
+                                    <span class="text-success">
+                                        <i class="fas fa-plus-circle"></i> {{ question.positive_points }} points for correct answer
+                                    </span>
+                                    <span class="text-danger ms-2">
+                                        <i class="fas fa-minus-circle"></i> {{ question.negative_points }} points for wrong answer
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="options">
+                                {% with options=question.options.all %}
+                                {% if options %}
+                                    {% for option in options %}
+                                    <div class="option-item mb-3">
+                                        <input class="form-check-input visually-hidden" 
+                                               type="radio" 
+                                               name="selected_option" 
+                                               value="{{ option.id }}" 
+                                               id="option_{{ option.id }}"
+                                               required>
+                                        <label class="form-check-label option-label" for="option_{{ option.id }}">
+                                            <span class="option-number">{{ forloop.counter }}</span>
+                                            <span class="option-text">{{ option.text }}</span>
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        No options available for this question. Please contact the administrator.
+                                    </div>
+                                {% endif %}
+                                {% endwith %}
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg submit-btn">
+                                    Submit Answer
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="quiz-complete-icon mb-4">
+                                <i class="fas fa-trophy fa-3x text-warning"></i>
+                            </div>
+                            <h4 class="mb-4">Quiz Completed! 🎉</h4>
+                            <div class="final-score mb-4">
+                                <h2>Your final score: {{ score }}</h2>
+                                <p class="text-muted">Out of {{ total_questions }} questions</p>
+                            </div>
+                            <div class="d-grid gap-2 col-md-6 mx-auto">
+                                <a href="{% url 'home' %}?course={{ subject.course.id }}" class="btn btn-primary btn-lg">
+                                    Back to Subjects
+                                </a>
+                                <a href="{% url 'start_quiz' subject.id %}" class="btn btn-outline-primary btn-lg">
+                                    Try Again
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .quiz-card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 12px;
+    }
+    
+    .option-item {
+        margin-bottom: 1rem;
+    }
+    
+    .option-label {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0;
+        width: 100%;
+    }
+    
+    .option-number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background-color: #f8f9fa;
+        border-radius: 50%;
+        margin-right: 1rem;
+        font-weight: bold;
+        color: #6c757d;
+    }
+    
+    .option-label:hover {
+        background-color: rgba(255, 193, 7, 0.1);
+        border-color: var(--default-color);
+        transform: translateY(-1px);
+    }
+    
+    .form-check-input:checked + .option-label {
+        background-color: rgba(255, 193, 7, 0.2);
+        border-color: var(--default-color);
+        font-weight: 500;
+    }
+    
+    .form-check-input:checked + .option-label .option-number {
+        background-color: var(--default-color);
+        color: #000;
+    }
+    
+    .question-text {
+        font-size: 1.25rem;
+        line-height: 1.6;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .points-info {
+        background-color: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .quiz-info .badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .final-score {
+        background-color: #f8f9fa;
+        padding: 2rem;
+        border-radius: 12px;
+    }
+    
+    .alert {
+        border: none;
+        border-radius: 8px;
+    }
+    
+    .btn-outline-primary {
+        border-width: 2px;
+    }
+    
+    .btn-outline-primary:hover {
+        background-color: var(--default-color);
+        border-color: var(--default-color);
+        color: #000;
+    }
+    
+    .submit-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .submit-btn:hover {
+        transform: translateY(-2px);
+    }
+    
+    .quiz-complete-icon {
+        animation: trophy-bounce 1s ease-in-out;
+    }
+    
+    @keyframes trophy-bounce {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-hide alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        }, 5000);
+    });
+    
+    // Submit button loading state
+    const form = document.getElementById('quizForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            const button = this.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
+        });
+    }
+    
+    // Keyboard shortcuts for options (1-4)
+    document.addEventListener('keydown', function(e) {
+        if (e.key >= '1' && e.key <= '4') {
+            const optionIndex = parseInt(e.key) - 1;
+            const options = document.querySelectorAll('.option-label');
+            if (options[optionIndex]) {
+                options[optionIndex].click();
+            }
+        } else if (e.key === 'Enter' && form) {
+            const selectedOption = form.querySelector('input[name="selected_option"]:checked');
+            if (selectedOption) {
+                form.submit();
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

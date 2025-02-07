@@ -1,0 +1,120 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card login-card">
+                <div class="card-body">
+                    <h2 class="text-center mb-4">Login</h2>
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            Your credentials didn't match. Please try again.
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'login' %}" id="loginForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">Full Name*</label>
+                            <input type="text" name="name" class="form-control" id="id_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_phone" class="form-label">Phone Number*</label>
+                            <input type="tel" name="phone" class="form-control" id="id_phone" 
+                                   pattern="[0-9]{10}" maxlength="10" required
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
+                                   placeholder="Enter 10 digit phone number">
+                            <div class="invalid-feedback">
+                                Please enter a valid 10-digit phone number
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Username*</label>
+                            <input type="text" name="username" class="form-control" id="id_username" required>
+                        </div>
+                        <div class="mb-4">
+                            <label for="id_password" class="form-label">Password*</label>
+                            <input type="password" name="password" class="form-control" id="id_password" required>
+                        </div>
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        margin-top: 2rem;
+    }
+    
+    .card-body {
+        padding: 2rem;
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border-color: #dee2e6;
+    }
+    
+    .form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-primary {
+        padding: 0.75rem 1rem;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+    .required::after {
+        content: "*";
+        color: red;
+        margin-left: 4px;
+    }
+</style>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+    const phoneInput = document.getElementById('id_phone');
+    const nameInput = document.getElementById('id_name');
+    
+    if (phoneInput.value.length !== 10) {
+        phoneInput.classList.add('is-invalid');
+        event.preventDefault();
+    } else {
+        phoneInput.classList.remove('is-invalid');
+    }
+    
+    if (!nameInput.value.trim()) {
+        nameInput.classList.add('is-invalid');
+        event.preventDefault();
+    } else {
+        nameInput.classList.remove('is-invalid');
+    }
+});
+
+// Prevent non-numeric input in phone field
+document.getElementById('id_phone').addEventListener('keypress', function(event) {
+    if (event.key < '0' || event.key > '9') {
+        event.preventDefault();
+    }
+});
+</script>
+{% endblock %}

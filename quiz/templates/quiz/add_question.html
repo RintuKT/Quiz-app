@@ -1,0 +1,123 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}Add Question - Quiz App{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Add New Question</h2>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="subject" class="form-label required">Subject</label>
+                        <select name="subject" id="subject" class="form-select" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in subjects %}
+                                <option value="{{ subject.id }}" {% if form_data.subject == subject.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ subject.name }} ({{ subject.course.get_name_display }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="question_text" class="form-label required">Question Text</label>
+                        <textarea name="question_text" id="question_text" class="form-control" rows="3" required>{{ form_data.question_text|default:'' }}</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="positive_points" class="form-label required">Positive Points</label>
+                            <input type="number" name="positive_points" id="positive_points" class="form-control" value="{{ form_data.positive_points|default:'1' }}" min="0" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="negative_points" class="form-label required">Negative Points</label>
+                            <input type="number" name="negative_points" id="negative_points" class="form-control" value="{{ form_data.negative_points|default:'0' }}" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <div id="options-container">
+                        <h4 class="mb-3">Options <span class="text-danger">*</span></h4>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            You must select one option as the correct answer
+                        </div>
+                        {% for i in "1234" %}
+                        <div class="option-group mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text">{{ forloop.counter }}</span>
+                                <input type="text" 
+                                       name="option_text_{{ forloop.counter }}" 
+                                       class="form-control" 
+                                       placeholder="Option {{ forloop.counter }}" 
+                                       value="{{ form_data|dict_key:'option_text_'|add:forloop.counter|default:'' }}"
+                                       required>
+                                <div class="input-group-text">
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" 
+                                               type="radio" 
+                                               name="correct_option" 
+                                               value="{{ forloop.counter }}" 
+                                               id="correct_{{ forloop.counter }}" 
+                                               required
+                                               {% if form_data.correct_option == forloop.counter|stringformat:"s" %}checked{% endif %}>
+                                        <label class="form-check-label mb-0" for="correct_{{ forloop.counter }}">
+                                            Correct Answer
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Add Question</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .required:after {
+        content: " *";
+        color: var(--danger-color);
+    }
+    
+    .option-group .input-group:hover {
+        box-shadow: 0 0 5px rgba(255, 165, 0, 0.3);
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--correct-color);
+        border-color: var(--correct-color);
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+    }
+    
+    .alert-warning {
+        background-color: rgba(255, 215, 0, 0.1);
+        border-color: var(--wrong-color);
+        color: #856404;
+    }
+    
+    .alert-warning i {
+        margin-right: 8px;
+        color: var(--wrong-color);
+    }
+</style>
+{% endblock %}

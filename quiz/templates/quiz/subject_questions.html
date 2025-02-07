@@ -1,0 +1,123 @@
+{% extends 'quiz/base.html' %}
+
+{% block title %}Questions - {{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center">
+                    <a href="{% url 'home' %}?course={{ subject.course.id }}" class="btn btn-outline-primary me-3">
+                        <i class="fas fa-arrow-left"></i> Back to Subjects
+                    </a>
+                    <h2 class="mb-0">{{ subject.name }}</h2>
+                </div>
+                <div class="total-score">
+                    <span class="badge bg-primary fs-5">Total Score: {{ total_score }}</span>
+                </div>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="questions-list">
+                {% for question in questions %}
+                    <div class="card question-card mb-3">
+                        <div class="card-body">
+                            <div class="question-header d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">{{ question.text }}</h5>
+                                {% if question.user_submission %}
+                                    {% if question.user_submission.selected_option.is_correct %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> Correct (+{{ question.positive_points }})
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times"></i> Wrong (-{{ question.negative_points }})
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <a href="{% url 'quiz_question' subject.id %}?question={{ question.id }}" class="btn btn-primary btn-sm">
+                                        Answer Question
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                            {% if question.user_submission %}
+                                <div class="options-list">
+                                    {% for option in question.options.all %}
+                                        <div class="option-item {% if option.is_correct %}correct{% elif option == question.user_submission.selected_option and not option.is_correct %}wrong{% endif %}">
+                                            {{ option.text }}
+                                            {% if option.is_correct %}
+                                                <i class="fas fa-check text-success"></i>
+                                            {% elif option == question.user_submission.selected_option and not option.is_correct %}
+                                                <i class="fas fa-times text-danger"></i>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="alert alert-info">
+                        No questions available for this subject yet.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .question-card {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: none;
+        border-radius: 12px;
+        transition: transform 0.2s;
+    }
+
+    .question-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .options-list {
+        margin-top: 1rem;
+    }
+
+    .option-item {
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .option-item.correct {
+        background-color: rgba(25, 135, 84, 0.1);
+        border: 1px solid rgba(25, 135, 84, 0.2);
+    }
+
+    .option-item.wrong {
+        background-color: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+
+    .total-score .badge {
+        padding: 0.75rem 1.5rem;
+    }
+
+    .badge {
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
