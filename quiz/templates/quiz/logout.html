@@ -1,0 +1,14 @@
+{% extends "quiz/base.html" %}  <!-- Ensure it extends the main template -->
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h2 class="text-success">You have successfully logged out!</h2>
+    <p class="lead">Thank you for using the Quiz App.</p>
+    
+    <div class="mt-4">
+        <a href="{% url 'login' %}" class="btn btn-primary">Login Again</a>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Go to Homepage</a>
+    </div>
+</div>
+{% endblock %}
+

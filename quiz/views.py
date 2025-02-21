@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
+from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db.models import Sum, Prefetch
@@ -356,3 +357,6 @@ class UserSubmissionViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         return super().create(request, *args, **kwargs)
+def user_logout(request):
+        logout(request)
+        return render(request, 'quiz/logout.html')   

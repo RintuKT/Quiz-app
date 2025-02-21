@@ -14,4 +14,5 @@ urlpatterns = [
     path('subject/<int:subject_id>/questions/', views.subject_questions, name='subject_questions'),
     path('quiz/<int:subject_id>/question/', views.quiz_question, name='quiz_question'),
     path('quiz/<int:subject_id>/submit/<int:question_id>/', views.submit_answer, name='submit_answer'),
+    path('logout/', views.user_logout, name='logout'),
 ]
