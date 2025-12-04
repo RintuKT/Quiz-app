@@ -8,40 +8,53 @@
         <div class="col-md-6 col-lg-5">
             <div class="card login-card">
                 <div class="card-body">
-                    <h2 class="text-center mb-4">Login</h2>
-                    
-                    {% if form.errors %}
-                        <div class="alert alert-danger">
-                            Your credentials didn't match. Please try again.
+                    <div class="text-center mb-4">
+                        <div class="login-icon">
+                            <i class="fas fa-user-circle"></i>
                         </div>
+                        <h2 class="login-title">Welcome Back</h2>
+                        <p class="login-subtitle">Please login to continue</p>
+                    </div>
+
+                    {% if form.errors %}
+                    <div class="alert alert-danger alert-modern">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Your credentials didn't match. Please try again.
+                    </div>
                     {% endif %}
-                    
+
                     <form method="post" action="{% url 'login' %}" id="loginForm">
                         {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="id_name" class="form-label">Full Name*</label>
-                            <input type="text" name="name" class="form-control" id="id_name" required>
+                        <div class="mb-4 form-floating-custom">
+                            <input type="text" name="name" class="form-control" id="id_name" placeholder="Full Name"
+                                required>
+                            <label for="id_name">Full Name*</label>
                         </div>
-                        <div class="mb-3">
-                            <label for="id_phone" class="form-label">Phone Number*</label>
-                            <input type="tel" name="phone" class="form-control" id="id_phone" 
-                                   pattern="[0-9]{10}" maxlength="10" required
-                                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
-                                   placeholder="Enter 10 digit phone number">
+                        <div class="mb-4 form-floating-custom">
+                            <input type="tel" name="phone" class="form-control" id="id_phone" pattern="[0-9]{10}"
+                                maxlength="10" required
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
+                                placeholder="Phone Number">
+                            <label for="id_phone">Phone Number*</label>
                             <div class="invalid-feedback">
                                 Please enter a valid 10-digit phone number
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="id_username" class="form-label">Username*</label>
-                            <input type="text" name="username" class="form-control" id="id_username" required>
+                        <div class="mb-4 form-floating-custom">
+                            <input type="text" name="username" class="form-control" id="id_username"
+                                placeholder="Username" required>
+                            <label for="id_username">Username*</label>
                         </div>
-                        <div class="mb-4">
-                            <label for="id_password" class="form-label">Password*</label>
-                            <input type="password" name="password" class="form-control" id="id_password" required>
+                        <div class="mb-4 form-floating-custom">
+                            <input type="password" name="password" class="form-control" id="id_password"
+                                placeholder="Password" required>
+                            <label for="id_password">Password*</label>
                         </div>
                         <input type="hidden" name="next" value="{{ next }}">
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
+                        <button type="submit" class="btn btn-primary w-100 btn-login">
+                            <span>Login</span>
+                            <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -51,70 +64,165 @@
 
 <style>
     .login-card {
-        border: none;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        border-radius: 24px;
         margin-top: 2rem;
-    }
-    
-    .card-body {
-        padding: 2rem;
-    }
-    
-    .form-control {
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        border-color: #dee2e6;
-    }
-    
-    .form-control:focus {
-        border-color: var(--bs-primary);
-        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
-    }
-    
-    .form-label {
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-    
-    .btn-primary {
-        padding: 0.75rem 1rem;
-        font-weight: 500;
-        border-radius: 8px;
+        overflow: hidden;
     }
 
-    .required::after {
-        content: "*";
-        color: red;
-        margin-left: 4px;
+    .card-body {
+        padding: 3rem 2.5rem;
+    }
+
+    .login-icon {
+        font-size: 4rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes iconFloat {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .login-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-subtitle {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        margin-bottom: 0;
+    }
+
+    /* Floating Label Effect */
+    .form-floating-custom {
+        position: relative;
+    }
+
+    .form-floating-custom label {
+        position: absolute;
+        top: 50%;
+        left: 1.25rem;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+        font-size: 1rem;
+        font-weight: 500;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        background: white;
+        padding: 0 0.5rem;
+    }
+
+    .form-floating-custom input:focus+label,
+    .form-floating-custom input:not(:placeholder-shown)+label {
+        top: 0;
+        font-size: 0.875rem;
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .form-control {
+        border: 2px solid rgba(102, 126, 234, 0.2);
+        border-radius: 14px;
+        padding: 1rem 1.25rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: transparent;
+    }
+
+    .btn-login {
+        padding: 1rem 2rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border-radius: 14px;
+        margin-top: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-login span {
+        position: relative;
+        z-index: 1;
+    }
+
+    .alert-modern {
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 2rem 1.5rem;
+        }
+
+        .login-icon {
+            font-size: 3rem;
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+        }
     }
 </style>
 
 <script>
-document.getElementById('loginForm').addEventListener('submit', function(event) {
-    const phoneInput = document.getElementById('id_phone');
-    const nameInput = document.getElementById('id_name');
-    
-    if (phoneInput.value.length !== 10) {
-        phoneInput.classList.add('is-invalid');
-        event.preventDefault();
-    } else {
-        phoneInput.classList.remove('is-invalid');
-    }
-    
-    if (!nameInput.value.trim()) {
-        nameInput.classList.add('is-invalid');
-        event.preventDefault();
-    } else {
-        nameInput.classList.remove('is-invalid');
-    }
-});
+    document.getElementById('loginForm').addEventListener('submit', function (event) {
+        const phoneInput = document.getElementById('id_phone');
+        const nameInput = document.getElementById('id_name');
 
-// Prevent non-numeric input in phone field
-document.getElementById('id_phone').addEventListener('keypress', function(event) {
-    if (event.key < '0' || event.key > '9') {
-        event.preventDefault();
-    }
-});
+        if (phoneInput.value.length !== 10) {
+            phoneInput.classList.add('is-invalid');
+            event.preventDefault();
+        } else {
+            phoneInput.classList.remove('is-invalid');
+        }
+
+        if (!nameInput.value.trim()) {
+            nameInput.classList.add('is-invalid');
+            event.preventDefault();
+        } else {
+            nameInput.classList.remove('is-invalid');
+        }
+    });
+
+    // Prevent non-numeric input in phone field
+    document.getElementById('id_phone').addEventListener('keypress', function (event) {
+        if (event.key < '0' || event.key > '9') {
+            event.preventDefault();
+        }
+    });
 </script>
 {% endblock %}

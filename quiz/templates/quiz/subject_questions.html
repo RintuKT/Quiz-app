@@ -5,71 +5,83 @@
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="col-md-10 col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-5">
                 <div class="d-flex align-items-center">
-                    <a href="{% url 'home' %}?course={{ subject.course.id }}" class="btn btn-outline-primary me-3">
-                        <i class="fas fa-arrow-left"></i> Back to Subjects
+                    <a href="{% url 'course_subjects' subject.course.id %}" class="btn btn-glass me-4">
+                        <i class="fas fa-arrow-left me-2"></i> Back
                     </a>
-                    <h2 class="mb-0">{{ subject.name }}</h2>
+                    <div>
+                        <h1 class="page-title mb-1">{{ subject.name }}</h1>
+                        <p class="page-subtitle">{{ subject.course.get_name_display }}</p>
+                    </div>
                 </div>
-                <div class="total-score">
-                    <span class="badge bg-primary fs-5">Total Score: {{ total_score }}</span>
+                <div class="score-card">
+                    <span class="score-label">Total Score</span>
+                    <span class="score-value">{{ total_score }}</span>
                 </div>
             </div>
 
             {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4 alert-modern" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
             {% endif %}
 
             <div class="questions-list">
                 {% for question in questions %}
-                    <div class="card question-card mb-3">
-                        <div class="card-body">
-                            <div class="question-header d-flex justify-content-between align-items-start mb-3">
-                                <h5 class="card-title mb-0">{{ question.text }}</h5>
-                                {% if question.user_submission %}
-                                    {% if question.user_submission.selected_option.is_correct %}
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check"></i> Correct (+{{ question.positive_points }})
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-danger">
-                                            <i class="fas fa-times"></i> Wrong (-{{ question.negative_points }})
-                                        </span>
-                                    {% endif %}
-                                {% else %}
-                                    <a href="{% url 'quiz_question' subject.id %}?question={{ question.id }}" class="btn btn-primary btn-sm">
-                                        Answer Question
-                                    </a>
-                                {% endif %}
+                <div class="card question-card mb-4">
+                    <div class="card-body p-4">
+                        <div class="question-header d-flex justify-content-between align-items-start mb-4">
+                            <div class="d-flex">
+                                <span class="question-number">{{ forloop.counter }}</span>
+                                <h5 class="question-text mb-0">{{ question.text }}</h5>
                             </div>
-
                             {% if question.user_submission %}
-                                <div class="options-list">
-                                    {% for option in question.options.all %}
-                                        <div class="option-item {% if option.is_correct %}correct{% elif option == question.user_submission.selected_option and not option.is_correct %}wrong{% endif %}">
-                                            {{ option.text }}
-                                            {% if option.is_correct %}
-                                                <i class="fas fa-check text-success"></i>
-                                            {% elif option == question.user_submission.selected_option and not option.is_correct %}
-                                                <i class="fas fa-times text-danger"></i>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %}
-                                </div>
+                            {% if question.user_submission.selected_option.is_correct %}
+                            <span class="badge status-badge correct">
+                                <i class="fas fa-check me-1"></i> Correct (+{{ question.positive_points }})
+                            </span>
+                            {% else %}
+                            <span class="badge status-badge wrong">
+                                <i class="fas fa-times me-1"></i> Wrong (-{{ question.negative_points }})
+                            </span>
+                            {% endif %}
+                            {% else %}
+                            <a href="{% url 'quiz_question' subject.id %}?question={{ question.id }}"
+                                class="btn btn-primary btn-answer">
+                                Answer <i class="fas fa-chevron-right ms-1"></i>
+                            </a>
                             {% endif %}
                         </div>
+
+                        {% if question.user_submission %}
+                        <div class="options-list">
+                            {% for option in question.options.all %}
+                            <div
+                                class="option-item {% if option.is_correct %}correct{% elif option == question.user_submission.selected_option and not option.is_correct %}wrong{% endif %}">
+                                <span class="option-text">{{ option.text }}</span>
+                                {% if option.is_correct %}
+                                <i class="fas fa-check-circle text-success fs-5"></i>
+                                {% elif option == question.user_submission.selected_option and not option.is_correct %}
+                                <i class="fas fa-times-circle text-danger fs-5"></i>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
+                </div>
                 {% empty %}
-                    <div class="alert alert-info">
-                        No questions available for this subject yet.
-                    </div>
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-question"></i>
+                    <h3>No questions available</h3>
+                    <p>Questions will be added soon for this subject</p>
+                </div>
                 {% endfor %}
             </div>
         </div>
@@ -77,47 +89,225 @@
 </div>
 
 <style>
-    .question-card {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        border: none;
+    /* Page Header */
+    .page-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .page-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .btn-glass {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.75rem 1.25rem;
         border-radius: 12px;
-        transition: transform 0.2s;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        transform: translateX(-3px);
+    }
+
+    .score-card {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.75rem 1.5rem;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .score-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    .score-value {
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Question Cards */
+    .question-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
     }
 
     .question-card:hover {
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .question-number {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-right: 1rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .question-text {
+        color: var(--text-primary);
+        font-weight: 600;
+        line-height: 1.5;
+        font-size: 1.1rem;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .status-badge.correct {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--correct-color);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .status-badge.wrong {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-answer {
+        padding: 0.5rem 1.25rem;
+        border-radius: 10px;
+        font-size: 0.9rem;
     }
 
     .options-list {
-        margin-top: 1rem;
+        margin-top: 1.5rem;
+        padding-left: 3rem;
     }
 
     .option-item {
-        padding: 0.75rem 1rem;
-        margin-bottom: 0.5rem;
-        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.75rem;
+        border-radius: 12px;
         background-color: #f8f9fa;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        border: 2px solid transparent;
+        transition: all 0.2s ease;
     }
 
     .option-item.correct {
-        background-color: rgba(25, 135, 84, 0.1);
-        border: 1px solid rgba(25, 135, 84, 0.2);
+        background-color: rgba(16, 185, 129, 0.05);
+        border-color: var(--correct-color);
     }
 
     .option-item.wrong {
-        background-color: rgba(220, 53, 69, 0.1);
-        border: 1px solid rgba(220, 53, 69, 0.2);
+        background-color: rgba(239, 68, 68, 0.05);
+        border-color: var(--danger-color);
     }
 
-    .total-score .badge {
-        padding: 0.75rem 1.5rem;
-    }
-
-    .badge {
+    .option-text {
         font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+
+    .empty-state h3 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-state p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .alert-modern {
+        border-radius: 14px;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .options-list {
+            padding-left: 0;
+        }
+
+        .question-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .status-badge,
+        .btn-answer {
+            width: 100%;
+            text-align: center;
+            display: block;
+        }
     }
 </style>
 {% endblock %}

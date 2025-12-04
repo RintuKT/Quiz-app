@@ -5,57 +5,76 @@
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10 col-lg-9">
             {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4 alert-modern" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
             {% endif %}
-            
+
             <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Courses</a></li>
-                    <li class="breadcrumb-item active">{{ course.get_name_display }}</li>
+                <ol class="breadcrumb breadcrumb-modern">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}"><i class="fas fa-home me-1"></i>Courses</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ course.get_name_display }}</li>
                 </ol>
             </nav>
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="mb-0">{{ course.get_name_display }}</h2>
+            <div class="d-flex justify-content-between align-items-center mb-5">
+                <div>
+                    <h1 class="page-title mb-2">
+                        <i class="fas fa-layer-group me-3"></i>{{ course.get_name_display }}
+                    </h1>
+                    <p class="page-subtitle">Select a subject to view questions</p>
+                </div>
                 {% if is_admin %}
-                    <a href="{% url 'add_question' %}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Add Question
-                    </a>
+                <a href="{% url 'add_question' %}" class="btn btn-primary btn-add">
+                    <i class="fas fa-plus-circle me-2"></i> Add Question
+                </a>
                 {% endif %}
             </div>
 
             {% if course.description %}
-                <p class="text-muted mb-4">{{ course.description }}</p>
+            <div class="course-desc-card mb-5">
+                <p class="mb-0">{{ course.description }}</p>
+            </div>
             {% endif %}
 
             <div class="row g-4">
                 {% for subject in subjects %}
-                    <div class="col-md-6">
-                        <div class="subject-card">
+                <div class="col-md-6">
+                    <div class="subject-card">
+                        <div class="subject-card-inner">
+                            <div class="subject-icon">
+                                <i class="fas fa-book-open"></i>
+                            </div>
                             <div class="subject-info">
-                                <h4 class="subject-title">{{ subject.name }}</h4>
-                                <p class="subject-type">{{ subject.get_subject_type_display }}</p>
+                                <h3 class="subject-title">{{ subject.name }}</h3>
+                                <span class="badge subject-badge">
+                                    {{ subject.get_subject_type_display }}
+                                </span>
                             </div>
                             <div class="subject-actions">
-                                <a href="{% url 'subject_questions' subject.id %}" class="btn btn-primary">
+                                <a href="{% url 'subject_questions' subject.id %}" class="btn btn-primary btn-subject">
                                     View Questions
+                                    <i class="fas fa-arrow-right ms-2"></i>
                                 </a>
                             </div>
                         </div>
                     </div>
+                </div>
                 {% empty %}
-                    <div class="col-12">
-                        <div class="alert alert-info">
-                            No subjects available for this course yet.
-                        </div>
+                <div class="col-12">
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h3>No subjects available</h3>
+                        <p>Check back later for new subjects</p>
                     </div>
+                </div>
                 {% endfor %}
             </div>
         </div>
@@ -63,49 +82,194 @@
 </div>
 
 <style>
-    .subject-card {
-        background: #fff;
+    /* Breadcrumbs */
+    .breadcrumb-modern {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 0.75rem 1.5rem;
         border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: transform 0.2s;
+        display: inline-flex;
     }
-    
-    .subject-card:hover {
-        transform: translateY(-2px);
-    }
-    
-    .subject-title {
-        font-size: 1.25rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .subject-type {
-        color: #6c757d;
-        margin-bottom: 0;
-        font-size: 0.875rem;
-    }
-    
-    .breadcrumb {
-        background: none;
-        padding: 0;
-    }
-    
+
     .breadcrumb-item a {
-        color: var(--bs-primary);
+        color: rgba(255, 255, 255, 0.9);
         text-decoration: none;
-    }
-    
-    .breadcrumb-item.active {
-        color: #6c757d;
-    }
-    
-    .btn-primary {
-        padding: 0.5rem 1rem;
         font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .breadcrumb-item a:hover {
+        color: white;
+    }
+
+    .breadcrumb-item.active {
+        color: white;
+        font-weight: 600;
+    }
+
+    .breadcrumb-item+.breadcrumb-item::before {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Page Header */
+    .page-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+        margin: 0;
+    }
+
+    .page-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .btn-add {
+        box-shadow: 0 4px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    /* Course Description */
+    .course-desc-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: 16px;
+        border-left: 4px solid var(--accent-color);
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    /* Subject Cards */
+    .subject-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 2px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        transition: all 0.4s ease;
+        height: 100%;
+    }
+
+    .subject-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+    }
+
+    .subject-card-inner {
+        background: white;
+        border-radius: 22px;
+        padding: 2rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .subject-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .subject-icon i {
+        font-size: 1.75rem;
+        color: white;
+    }
+
+    .subject-info {
+        flex: 1;
+        margin-bottom: 1.5rem;
+    }
+
+    .subject-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .subject-badge {
+        background: rgba(102, 126, 234, 0.1);
+        color: var(--primary-color);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .subject-actions {
+        margin-top: auto;
+    }
+
+    .btn-subject {
+        width: 100%;
+        padding: 0.875rem 1.5rem;
+        font-weight: 600;
+        border-radius: 12px;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1.5rem;
+        display: block;
+    }
+
+    .empty-state h3 {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .empty-state p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .alert-modern {
+        border-radius: 14px;
+        padding: 1rem 1.5rem;
+        font-weight: 500;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .subject-card-inner {
+            padding: 1.5rem;
+        }
     }
 </style>
 {% endblock %}

@@ -5,98 +5,116 @@
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-9 col-lg-8">
             {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4 alert-modern" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
             {% endif %}
-            
-            <div class="card quiz-card">
-                <div class="card-header">
+
+            <div class="quiz-container">
+                <div class="quiz-header mb-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
-                            <a href="javascript:history.back()" class="btn btn-outline-primary me-3">
-                                <i class="fas fa-arrow-left"></i> Back
+                            <a href="javascript:history.back()" class="btn btn-glass me-3">
+                                <i class="fas fa-arrow-left me-2"></i> Back
                             </a>
-                            <h3 class="mb-0">{{ subject.name }}</h3>
+                            <h3 class="quiz-title mb-0">{{ subject.name }}</h3>
                         </div>
-                        <div class="quiz-info">
-                            <span class="badge bg-primary">Question {{ current_question_no }} of {{ total_questions }}</span>
-                            <span class="badge bg-info ms-2">Score: {{ score }}</span>
+                        <div class="quiz-stats">
+                            <span class="badge stat-badge question-badge">
+                                <i class="fas fa-list-ol me-2"></i>{{ current_question_no }} / {{ total_questions }}
+                            </span>
+                            <span class="badge stat-badge score-badge ms-2">
+                                <i class="fas fa-star me-2"></i>Score: {{ score }}
+                            </span>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    {% if question %}
+
+                <div class="card quiz-card">
+                    <div class="card-body p-4 p-md-5">
+                        {% if question %}
                         <form method="post" action="{% url 'submit_answer' subject.id question.id %}" id="quizForm">
                             {% csrf_token %}
-                            <div class="question mb-4">
+                            <div class="question-section mb-5">
                                 <h4 class="question-text">{{ question.text }}</h4>
-                                <div class="points-info text-muted small mb-3">
-                                    <span class="text-success">
-                                        <i class="fas fa-plus-circle"></i> {{ question.positive_points }} points for correct answer
+                                <div class="points-info mt-3">
+                                    <span class="points-badge positive">
+                                        <i class="fas fa-plus-circle me-1"></i> {{ question.positive_points }} pts
                                     </span>
-                                    <span class="text-danger ms-2">
-                                        <i class="fas fa-minus-circle"></i> {{ question.negative_points }} points for wrong answer
+                                    <span class="points-badge negative ms-2">
+                                        <i class="fas fa-minus-circle me-1"></i> {{ question.negative_points }} pts
                                     </span>
                                 </div>
                             </div>
-                            
-                            <div class="options">
+
+                            <div class="options-section">
                                 {% with options=question.options.all %}
                                 {% if options %}
+                                <div class="options-grid">
                                     {% for option in options %}
-                                    <div class="option-item mb-3">
-                                        <input class="form-check-input visually-hidden" 
-                                               type="radio" 
-                                               name="selected_option" 
-                                               value="{{ option.id }}" 
-                                               id="option_{{ option.id }}"
-                                               required>
-                                        <label class="form-check-label option-label" for="option_{{ option.id }}">
-                                            <span class="option-number">{{ forloop.counter }}</span>
-                                            <span class="option-text">{{ option.text }}</span>
+                                    <div class="option-wrapper">
+                                        <input class="form-check-input visually-hidden" type="radio"
+                                            name="selected_option" value="{{ option.id }}" id="option_{{ option.id }}"
+                                            required>
+                                        <label class="option-card" for="option_{{ option.id }}">
+                                            <span class="option-indicator">{{ forloop.counter }}</span>
+                                            <span class="option-content">{{ option.text }}</span>
+                                            <div class="option-check">
+                                                <i class="fas fa-check"></i>
+                                            </div>
                                         </label>
                                     </div>
                                     {% endfor %}
+                                </div>
                                 {% else %}
-                                    <div class="alert alert-warning">
-                                        No options available for this question. Please contact the administrator.
-                                    </div>
+                                <div class="alert alert-warning">
+                                    No options available for this question. Please contact the administrator.
+                                </div>
                                 {% endif %}
                                 {% endwith %}
                             </div>
-                            
-                            <div class="d-grid gap-2 mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg submit-btn">
-                                    Submit Answer
+
+                            <div class="action-section mt-5">
+                                <button type="submit" class="btn btn-primary btn-lg submit-btn w-100">
+                                    Submit Answer <i class="fas fa-paper-plane ms-2"></i>
                                 </button>
                             </div>
                         </form>
-                    {% else %}
+                        {% else %}
                         <div class="text-center py-5">
-                            <div class="quiz-complete-icon mb-4">
-                                <i class="fas fa-trophy fa-3x text-warning"></i>
+                            <div class="completion-animation mb-4">
+                                <div class="trophy-container">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
                             </div>
-                            <h4 class="mb-4">Quiz Completed! 🎉</h4>
-                            <div class="final-score mb-4">
-                                <h2>Your final score: {{ score }}</h2>
-                                <p class="text-muted">Out of {{ total_questions }} questions</p>
+                            <h2 class="completion-title mb-3">Quiz Completed!</h2>
+                            <p class="completion-subtitle mb-5">Great job completing the {{ subject.name }} quiz</p>
+
+                            <div class="final-score-card mb-5">
+                                <div class="score-label">Your Final Score</div>
+                                <div class="score-number">{{ score }}</div>
+                                <div class="score-total">out of {{ total_questions }} questions</div>
                             </div>
-                            <div class="d-grid gap-2 col-md-6 mx-auto">
-                                <a href="{% url 'home' %}?course={{ subject.course.id }}" class="btn btn-primary btn-lg">
-                                    Back to Subjects
+
+                            <div class="d-grid gap-3 col-md-8 mx-auto">
+                                <a href="{% url 'home' %}?course={{ subject.course.id }}"
+                                    class="btn btn-primary btn-lg btn-action">
+                                    <i class="fas fa-arrow-left me-2"></i> Back to Subjects
                                 </a>
-                                <a href="{% url 'start_quiz' subject.id %}" class="btn btn-outline-primary btn-lg">
-                                    Try Again
+                                <a href="{% url 'start_quiz' subject.id %}"
+                                    class="btn btn-outline-primary btn-lg btn-action">
+                                    <i class="fas fa-redo me-2"></i> Try Again
                                 </a>
                             </div>
                         </div>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
@@ -104,155 +122,315 @@
 </div>
 
 <style>
-    .quiz-card {
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border: none;
+    /* Header Styles */
+    .quiz-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        color: white;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-glass {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 0.5rem 1rem;
         border-radius: 12px;
-    }
-    
-    .option-item {
-        margin-bottom: 1rem;
-    }
-    
-    .option-label {
-        display: flex;
-        align-items: center;
-        padding: 1rem;
-        border: 2px solid #dee2e6;
-        border-radius: 8px;
-        cursor: pointer;
+        font-weight: 600;
         transition: all 0.3s ease;
-        margin: 0;
-        width: 100%;
     }
-    
-    .option-number {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 30px;
-        height: 30px;
-        background-color: #f8f9fa;
-        border-radius: 50%;
-        margin-right: 1rem;
-        font-weight: bold;
-        color: #6c757d;
+
+    .btn-glass:hover {
+        background: rgba(255, 255, 255, 0.3);
+        color: white;
+        transform: translateX(-3px);
     }
-    
-    .option-label:hover {
-        background-color: rgba(255, 193, 7, 0.1);
-        border-color: var(--default-color);
-        transform: translateY(-1px);
+
+    .stat-badge {
+        padding: 0.6rem 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        backdrop-filter: blur(10px);
     }
-    
-    .form-check-input:checked + .option-label {
-        background-color: rgba(255, 193, 7, 0.2);
-        border-color: var(--default-color);
-        font-weight: 500;
+
+    .question-badge {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
     }
-    
-    .form-check-input:checked + .option-label .option-number {
-        background-color: var(--default-color);
+
+    .score-badge {
+        background: linear-gradient(135deg, #ffd700, #ffa500);
         color: #000;
+        box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
     }
-    
+
+    /* Quiz Card */
+    .quiz-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
     .question-text {
-        font-size: 1.25rem;
-        line-height: 1.6;
-        color: #2c3e50;
-        margin-bottom: 1rem;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.5;
     }
-    
-    .points-info {
-        background-color: #f8f9fa;
-        padding: 0.75rem 1rem;
-        border-radius: 6px;
-        display: flex;
-        justify-content: center;
+
+    .points-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .points-badge.positive {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--correct-color);
+    }
+
+    .points-badge.negative {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+    }
+
+    /* Options Styling */
+    .options-grid {
+        display: grid;
         gap: 1rem;
     }
-    
-    .quiz-info .badge {
-        font-size: 0.9rem;
-        padding: 0.5rem 1rem;
+
+    .option-card {
+        display: flex;
+        align-items: center;
+        padding: 1.25rem;
+        background: #f8f9fa;
+        border: 2px solid transparent;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
     }
-    
-    .final-score {
-        background-color: #f8f9fa;
-        padding: 2rem;
-        border-radius: 12px;
-    }
-    
-    .alert {
-        border: none;
-        border-radius: 8px;
-    }
-    
-    .btn-outline-primary {
-        border-width: 2px;
-    }
-    
-    .btn-outline-primary:hover {
-        background-color: var(--default-color);
-        border-color: var(--default-color);
-        color: #000;
-    }
-    
-    .submit-btn {
+
+    .option-indicator {
+        width: 36px;
+        height: 36px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: var(--text-secondary);
+        margin-right: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         transition: all 0.3s ease;
+        flex-shrink: 0;
     }
-    
-    .submit-btn:hover {
+
+    .option-content {
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        flex: 1;
+    }
+
+    .option-check {
+        width: 24px;
+        height: 24px;
+        background: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.8rem;
+        opacity: 0;
+        transform: scale(0);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Hover State */
+    .option-card:hover {
+        background: white;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
         transform: translateY(-2px);
     }
-    
-    .quiz-complete-icon {
-        animation: trophy-bounce 1s ease-in-out;
+
+    .option-card:hover .option-indicator {
+        background: var(--primary-color);
+        color: white;
     }
-    
-    @keyframes trophy-bounce {
-        0% { transform: scale(0); }
-        50% { transform: scale(1.2); }
-        100% { transform: scale(1); }
+
+    /* Selected State */
+    .form-check-input:checked+.option-card {
+        background: rgba(102, 126, 234, 0.05);
+        border-color: var(--primary-color);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    }
+
+    .form-check-input:checked+.option-card .option-indicator {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .form-check-input:checked+.option-card .option-check {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* Submit Button */
+    .submit-btn {
+        border-radius: 16px;
+        padding: 1rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        border: none;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    /* Completion Screen */
+    .trophy-container {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #ffd700, #ffa500);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 4rem;
+        color: white;
+        box-shadow: 0 10px 40px rgba(255, 165, 0, 0.4);
+        animation: trophy-float 3s ease-in-out infinite;
+    }
+
+    .completion-title {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 2.5rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .final-score-card {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-radius: 20px;
+        border: 2px dashed rgba(102, 126, 234, 0.2);
+    }
+
+    .score-number {
+        font-size: 4rem;
+        font-weight: 800;
+        line-height: 1;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 1rem 0;
+    }
+
+    .btn-action {
+        border-radius: 14px;
+        padding: 1rem;
+        font-weight: 600;
+    }
+
+    @keyframes trophy-float {
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .quiz-header .d-flex {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .quiz-stats {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stat-badge {
+            flex: 1;
+            text-align: center;
+            margin: 0 0.25rem;
+        }
+
+        .ms-2 {
+            margin-left: 0 !important;
+        }
     }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-hide alerts after 5 seconds
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function(alert) {
-        setTimeout(function() {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }, 5000);
-    });
-    
-    // Submit button loading state
-    const form = document.getElementById('quizForm');
-    if (form) {
-        form.addEventListener('submit', function() {
-            const button = this.querySelector('button[type="submit"]');
-            button.disabled = true;
-            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
+    document.addEventListener('DOMContentLoaded', function () {
+        // Auto-hide alerts
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function (alert) {
+            setTimeout(function () {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
         });
-    }
-    
-    // Keyboard shortcuts for options (1-4)
-    document.addEventListener('keydown', function(e) {
-        if (e.key >= '1' && e.key <= '4') {
-            const optionIndex = parseInt(e.key) - 1;
-            const options = document.querySelectorAll('.option-label');
-            if (options[optionIndex]) {
-                options[optionIndex].click();
-            }
-        } else if (e.key === 'Enter' && form) {
-            const selectedOption = form.querySelector('input[name="selected_option"]:checked');
-            if (selectedOption) {
-                form.submit();
-            }
+
+        // Submit button loading state
+        const form = document.getElementById('quizForm');
+        if (form) {
+            form.addEventListener('submit', function () {
+                const button = this.querySelector('button[type="submit"]');
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
+            });
         }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function (e) {
+            if (e.key >= '1' && e.key <= '4') {
+                const optionIndex = parseInt(e.key) - 1;
+                const options = document.querySelectorAll('input[name="selected_option"]');
+                if (options[optionIndex]) {
+                    options[optionIndex].click();
+                }
+            } else if (e.key === 'Enter' && form) {
+                const selectedOption = form.querySelector('input[name="selected_option"]:checked');
+                if (selectedOption) {
+                    form.submit();
+                }
+            }
+        });
     });
-});
 </script>
 {% endblock %}
