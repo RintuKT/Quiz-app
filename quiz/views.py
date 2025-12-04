@@ -4,7 +4,7 @@ from django.contrib.auth import login
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.db.models import Sum, Prefetch
+from django.db.models import Sum, Prefetch, Count, Q
 from .models import Question, Option, UserSubmission, Subject, Course, UserProfile
 from rest_framework import viewsets
 from .serializers import QuestionSerializer, OptionSerializer, UserSubmissionSerializer, QuestionDetailAdminSerializer
@@ -12,6 +12,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.decorators import action
+
+def get_user_total_score(user):
+    return UserSubmission.objects.filter(user=user).aggregate(total=Sum('score'))['total'] or 0
 
 @login_required
 def subject_questions(request, subject_id):
@@ -31,8 +34,8 @@ def subject_questions(request, subject_id):
     for question in questions:
         question.user_submission = question.user_submissions[0] if question.user_submissions else None
     
-    # Calculate total score
-    total_score = UserSubmission.objects.filter(
+    # Calculate subject score
+    subject_score = UserSubmission.objects.filter(
         user=request.user,
         question__subject=subject
     ).aggregate(total=Sum('score'))['total'] or 0
@@ -40,7 +43,8 @@ def subject_questions(request, subject_id):
     return render(request, 'quiz/subject_questions.html', {
         'subject': subject,
         'questions': questions,
-        'total_score': total_score
+        'total_score': subject_score,
+        'global_score': get_user_total_score(request.user)
     })
 
 @login_required
@@ -80,7 +84,12 @@ def quiz_question(request, subject_id):
         'current_question_no': UserSubmission.objects.filter(
             user=request.user,
             question__subject=subject
-        ).count() + 1
+        ).count() + 1,
+        'score': UserSubmission.objects.filter(
+            user=request.user,
+            question__subject=subject
+        ).aggregate(total=Sum('score'))['total'] or 0,
+        'global_score': get_user_total_score(request.user)
     })
 
 @login_required
@@ -113,6 +122,28 @@ def submit_answer(request, subject_id, question_id):
         score=points
     )
     
+    # Check for subject completion
+    total_questions = Question.objects.filter(subject=subject).count()
+    answered_questions = UserSubmission.objects.filter(
+        user=request.user,
+        question__subject=subject
+    ).count()
+    
+    is_completed = total_questions == answered_questions
+    percentage = 0
+    total_subject_score = 0
+    
+    if is_completed:
+        # Calculate percentage based on max possible score
+        # Assuming max score is sum of positive points for all questions
+        max_score = Question.objects.filter(subject=subject).aggregate(total=Sum('positive_points'))['total'] or 1
+        total_subject_score = UserSubmission.objects.filter(
+            user=request.user,
+            question__subject=subject
+        ).aggregate(total=Sum('score'))['total'] or 0
+        
+        percentage = (total_subject_score / max_score) * 100 if max_score > 0 else 0
+    
     # Get the correct answer for display
     correct_option = question.options.get(is_correct=True)
     
@@ -125,7 +156,11 @@ def submit_answer(request, subject_id, question_id):
             user=request.user,
             question__subject=subject
         ).aggregate(total=Sum('score'))['total'] or 0,
-        'correct_answer': correct_option.text if not selected_option.is_correct else None
+        'correct_answer': correct_option.text if not selected_option.is_correct else None,
+        'is_completed': is_completed,
+        'completion_percentage': percentage,
+        'total_subject_score': total_subject_score,
+        'global_score': get_user_total_score(request.user)
     })
 
 @login_required
@@ -134,7 +169,8 @@ def home(request):
     
     return render(request, 'quiz/home.html', {
         'courses': courses,
-        'is_admin': request.user.groups.filter(name='admin').exists()
+        'is_admin': request.user.groups.filter(name='admin').exists(),
+        'global_score': get_user_total_score(request.user)
     })
 
 @login_required
@@ -142,10 +178,23 @@ def course_subjects(request, course_id):
     course = get_object_or_404(Course, id=course_id)
     subjects = Subject.objects.filter(course=course).order_by('name')
     
+    # Annotate subjects with progress
+    for subject in subjects:
+        total_questions = Question.objects.filter(subject=subject).count()
+        answered_questions = UserSubmission.objects.filter(
+            user=request.user,
+            question__subject=subject
+        ).count()
+        
+        subject.total_questions = total_questions
+        subject.answered_questions = answered_questions
+        subject.progress = (answered_questions / total_questions * 100) if total_questions > 0 else 0
+    
     return render(request, 'quiz/course_subjects.html', {
         'course': course,
         'subjects': subjects,
-        'is_admin': request.user.groups.filter(name='admin').exists()
+        'is_admin': request.user.groups.filter(name='admin').exists(),
+        'global_score': get_user_total_score(request.user)
     })
 
 @login_required
@@ -211,7 +260,8 @@ def profile(request):
         'total_score': total_score,
         'subjects_data': subjects_data,
         'total_questions_answered': user_submissions.count(),
-        'is_admin': request.user.groups.filter(name='admin').exists()
+        'is_admin': request.user.groups.filter(name='admin').exists(),
+        'global_score': total_score
     })
 
 from django.shortcuts import render, redirect
@@ -256,7 +306,8 @@ def add_question(request):
             messages.error(request, 'All fields are required. Please ensure you have selected a correct answer.')
             return render(request, 'quiz/add_question.html', {
                 'subjects': subjects,
-                'form_data': request.POST  # Send back the form data to preserve user input
+                'form_data': request.POST,  # Send back the form data to preserve user input,
+                'global_score': get_user_total_score(request.user)
             })
         
         try:
@@ -278,7 +329,8 @@ def add_question(request):
                     question.delete()  # Clean up the created question
                     return render(request, 'quiz/add_question.html', {
                         'subjects': subjects,
-                        'form_data': request.POST
+                        'form_data': request.POST,
+                        'global_score': get_user_total_score(request.user)
                     })
                 
                 is_correct = str(i) == str(correct_option)
@@ -296,7 +348,8 @@ def add_question(request):
                 question.delete()
                 return render(request, 'quiz/add_question.html', {
                     'subjects': subjects,
-                    'form_data': request.POST
+                    'form_data': request.POST,
+                    'global_score': get_user_total_score(request.user)
                 })
             
             messages.success(request, 'Question added successfully!')
@@ -306,10 +359,11 @@ def add_question(request):
             messages.error(request, f'Error adding question: {str(e)}')
             return render(request, 'quiz/add_question.html', {
                 'subjects': subjects,
-                'form_data': request.POST
+                'form_data': request.POST,
+                'global_score': get_user_total_score(request.user)
             })
     
-    return render(request, 'quiz/add_question.html', {'subjects': subjects})
+    return render(request, 'quiz/add_question.html', {'subjects': subjects, 'global_score': get_user_total_score(request.user)})
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
